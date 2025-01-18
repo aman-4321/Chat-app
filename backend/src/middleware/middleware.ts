@@ -1,58 +1,75 @@
-import { NextFunction, Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import jwt, { JwtPayload, TokenExpiredError } from "jsonwebtoken";
-import dotenv from "dotenv";
 import { JWT_SECRET } from "../config";
+import { prisma } from "../db";
 
-dotenv.config();
+interface User {
+  id: string;
+  email: string;
+  fullName: string;
+  profilePic?: string | null;
+}
 
 declare global {
   namespace Express {
     interface Request {
-      userId?: string;
+      user?: User;
     }
   }
 }
 
-export const authMiddleware = (
+export const authMiddleware = async (
   req: Request,
   res: Response,
   next: NextFunction,
-): void => {
+): Promise<void> => {
   const token = req.cookies?.token;
 
   if (!token) {
-    res.status(401).json({
-      message: "No Token Provided",
-    });
+    res.status(401).json({ message: "Unauthorized - No Token Provided" });
     return;
   }
 
-  const secret = JWT_SECRET;
-
-  if (!secret) {
-    res.status(500).json({
-      message: "No JWT_SECRET found in env file",
-    });
+  if (!JWT_SECRET) {
+    res
+      .status(500)
+      .json({ message: "Internal server error - Missing JWT_SECRET" });
     return;
   }
 
   try {
-    const decoded = jwt.verify(token, secret) as JwtPayload;
+    const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
 
     if (!decoded.userId) {
-      res.status(401).json({
-        message: "Invalid token payload",
-      });
+      res.status(401).json({ message: "Unauthorized - Invalid Token Payload" });
       return;
     }
 
-    req.userId = decoded.userId;
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      select: {
+        id: true,
+        email: true,
+        fullName: true,
+        profilePic: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    if (!user) {
+      res.status(404).json({ message: "User Not Found" });
+      return;
+    }
+
+    req.user = user;
     next();
   } catch (err: any) {
     const message =
-      err instanceof TokenExpiredError ? "Token Expired" : "Invalid Token";
+      err instanceof TokenExpiredError
+        ? "Unauthorized - Token Expired"
+        : "Unauthorized - Invalid Token";
     res.status(401).json({ message });
-    console.error("Authentication error", err);
-    return;
+    console.error("Authentication error: ", err);
   }
 };

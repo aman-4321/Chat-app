@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import { JWT_SECRET } from "../config";
 import { signinSchema, signupSchema } from "../zod/userSchema";
 import { prisma } from "../db";
+import cloudinary from "../lib/cloudinary";
 
 export const userSignup = async (req: Request, res: Response) => {
   try {
@@ -125,13 +126,55 @@ export const userSignin = async (req: Request, res: Response) => {
 
 export const userLogout = async (req: Request, res: Response) => {
   try {
-    res.cookie("token", "");
+    res.clearCookie("token", {
+      httpOnly: true,
+      sameSite: "strict",
+    });
     res.status(200).json({ message: "Logged out Successfully" });
   } catch (err) {
     console.log(err);
     res.status(500).json({
       message: "Error during Signing in",
-      error: err,
+    });
+  }
+};
+
+export const updateProfile = async (req: Request, res: Response) => {
+  try {
+    const { profilePic } = req.body;
+
+    const userId = req.user?.id;
+
+    if (!profilePic) {
+      res.status(400).json({
+        message: "Profile pic is required",
+      });
+      return;
+    }
+
+    const uploadRespone = await cloudinary.uploader.upload(profilePic);
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: { profilePic: uploadRespone.secure_url },
+    });
+
+    res.status(200).json(updatedUser);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
+};
+
+export const checkAuth = async (req: Request, res: Response) => {
+  try {
+    res.status(200).json(req.user);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      message: "Internal Server Error",
     });
   }
 };

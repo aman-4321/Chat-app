@@ -14,11 +14,25 @@ datasource db {
 }
 
 model User {
+  id               String    @id @default(uuid())
+  email            String    @unique
+  password         String
+  fullName         String
+  profilePic       String    @default("")
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  sentMessages     Message[] @relation("SentMessages")
+  receivedMessages Message[] @relation("ReceivedMessages")
+}
+
+model Message {
   id         String   @id @default(uuid())
-  email      String   @unique
-  password   String
-  fullName   String
-  profilePic String   @default("")
+  senderId   String
+  receiverId String
+  text       String?
+  image      String?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+  sender     User     @relation("SentMessages", fields: [senderId], references: [id])
+  receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
 }
