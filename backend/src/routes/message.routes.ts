@@ -8,7 +8,7 @@ import {
 
 export const messageRouter = express.Router();
 
-messageRouter.get("/user", authMiddleware, getUserForSidebar);
+messageRouter.get("/users", authMiddleware, getUserForSidebar);
 
 messageRouter.get("/:id", authMiddleware, getMessages);
 

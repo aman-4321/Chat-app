@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { prisma } from "../db";
 import cloudinary from "../lib/cloudinary";
+import { getRecieverSocketId, wss } from "../lib/socket";
 
 export const getUserForSidebar = async (req: Request, res: Response) => {
   try {
@@ -54,8 +55,13 @@ export const getMessages = async (req: Request, res: Response) => {
 export const sendMessage = async (req: Request, res: Response) => {
   try {
     const { text, image } = req.body;
-    const { id } = req.params;
+    const { id: receiverId } = req.params;
     const senderId = req.user?.id;
+
+    if (!senderId) {
+      res.status(400).json({ error: "Sender ID is required" });
+      return;
+    }
 
     let imageUrl;
 
@@ -63,15 +69,29 @@ export const sendMessage = async (req: Request, res: Response) => {
       const uploadResponse = await cloudinary.uploader.upload(image);
       imageUrl = uploadResponse.secure_url;
     }
-    //@ts-ignore
-    const newMessage = new Message({
-      senderId,
-      id,
-      text,
-      imageUrl: imageUrl,
+
+    const newMessage = await prisma.message.create({
+      data: {
+        senderId,
+        receiverId,
+        text,
+        image: imageUrl,
+      },
+      include: {
+        sender: true,
+        receiver: true,
+      },
     });
 
-    //TODO: socket logic
+    const receiverSocket = getRecieverSocketId(receiverId);
+    if (receiverSocket && receiverSocket.readyState === WebSocket.OPEN) {
+      receiverSocket.send(
+        JSON.stringify({
+          type: "newMessage",
+          message: newMessage,
+        })
+      );
+    }
 
     res.status(200).json(newMessage);
   } catch (error) {

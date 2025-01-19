@@ -40,16 +40,20 @@ const Signup = () => {
     return true;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const success = validateForm();
+    const isValid = validateForm();
 
-    if (success === true) {
-      try {
-        signup(formData);
+    if (!isValid) return;
+
+    try {
+      const success = await signup(formData);
+      if (success) {
         router.push("/");
-      } catch {}
+      }
+    } catch (error) {
+      console.error("Signup Failed", error);
     }
   };
 

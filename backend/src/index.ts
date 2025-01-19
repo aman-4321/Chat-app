@@ -4,10 +4,9 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import { userRouter } from "./routes/user.routes";
 import { messageRouter } from "./routes/message.routes";
+import { app, server } from "./lib/socket";
 
 const port = process.env.PORT;
-
-const app = express();
 
 app.use(
   cors({
@@ -33,8 +32,8 @@ app.use(express.urlencoded({ limit: "50mb", extended: true }));
 app.use(cookieParser());
 
 app.use("/api/v1/user", userRouter);
-app.use("/api/v1/message", messageRouter);
+app.use("/api/v1/messages", messageRouter);
 
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`server is running on port ${port}`);
 });

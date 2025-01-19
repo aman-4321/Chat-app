@@ -1,63 +1,32 @@
 import { axiosInstance } from "@/lib/axios";
+import { AuthState, UserLoginData, UserSignupData } from "@/types/types";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { create } from "zustand";
 
-export interface User {
-  id: string;
-  fullName: string;
-  email: string;
-  profilePic: string;
-  createdAt: string;
-  updatedAt: string;
+export const BASE_URL = "ws://localhost:8080";
+
+interface WebSocketMessage {
+  type: string;
+  userIds?: string[];
 }
 
-export interface UserSignupData {
-  fullName: string;
-  email: string;
-  password: string;
-}
-
-export interface UserLoginData {
-  email: string;
-  password: string;
-}
-
-export interface AuthResponse {
-  message: string;
-  userId?: string;
-  email?: string;
-  fullName?: string;
-}
-
-interface AuthState {
-  authUser: User | null;
-  isSigningUp: boolean;
-  isLoggingIn: boolean;
-  isUpdatingProfile: boolean;
-  isChecking: boolean;
-  isCheckingAuth: boolean;
-  signup: (data: UserSignupData) => Promise<boolean>;
-  login: (data: UserLoginData) => Promise<boolean>;
-  logout: () => Promise<void>;
-  checkAuth: () => Promise<void>;
-  updateProfile: (data: { profilePic: string }) => Promise<void>;
-}
-
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   authUser: null,
   isSigningUp: false,
   isLoggingIn: false,
   isUpdatingProfile: false,
   isCheckingAuth: true,
   isChecking: true,
+  onlineUsers: [] as string[],
+  socket: null,
 
   checkAuth: async () => {
     try {
       const res = await axiosInstance.get("/user/check");
       set({ authUser: res.data });
-    } catch (error) {
-      console.log(error);
+      get().connectSocket();
+    } catch {
       set({ authUser: null });
     } finally {
       set({ isCheckingAuth: false });
@@ -71,6 +40,9 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({ authUser: res.data });
       // window.location.href = "/";
       toast.success("Account created successfully");
+
+      get().connectSocket();
+
       return true;
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
@@ -89,6 +61,9 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({ authUser: res.data });
       // window.location.href = "/";
       toast.success("Logged in successfully");
+
+      get().connectSocket();
+
       return true;
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -106,6 +81,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({ authUser: null });
       // window.location.href = "/login";
       toast.success("logged out successfully");
+      get().disconnectSocket();
     } catch (error) {
       if (axios.isAxiosError(error)) {
         toast.error(error.response?.data.message);
@@ -125,6 +101,41 @@ export const useAuthStore = create<AuthState>((set) => ({
       }
     } finally {
       set({ isUpdatingProfile: false });
+    }
+  },
+
+  connectSocket: () => {
+    const { socket, authUser } = get();
+    if (socket || !authUser) return;
+
+    const wsUrl = `${BASE_URL}?userId=${authUser.id}`;
+    const newSocket = new WebSocket(wsUrl);
+
+    newSocket.onopen = () => {
+      console.log("Socket connected");
+      set({ socket: newSocket });
+    };
+
+    newSocket.onmessage = (event) => {
+      try {
+        const data: WebSocketMessage = JSON.parse(event.data);
+        if (data.type === "getOnlineUsers" && data.userIds) {
+          set({ onlineUsers: data.userIds });
+        }
+      } catch (error) {
+        console.error("Error parsing websocket message", error);
+      }
+    };
+
+    newSocket.onerror = (error) => {
+      console.error("Websocket error", error);
+    };
+  },
+  disconnectSocket: () => {
+    const { socket } = get();
+    if (socket) {
+      socket.close();
+      set({ socket: null });
     }
   },
 }));
