@@ -1,0 +1,1 @@
+{"root":["./src/config.ts","./src/db.ts","./src/index.ts","./src/controllers/message.controller.ts","./src/controllers/user.controller.ts","./src/lib/cloudinary.ts","./src/lib/socket.ts","./src/middleware/middleware.ts","./src/routes/message.routes.ts","./src/routes/user.routes.ts","./src/seeds/user.seed.ts","./src/zod/userSchema.ts"],"version":"5.7.3"}

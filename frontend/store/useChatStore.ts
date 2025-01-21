@@ -63,7 +63,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     socket.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        console.log("Recieved message:", data);
 
         if (data.type === "newMessage") {
           const { selectedUser, messages } = get();

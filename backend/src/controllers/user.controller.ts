@@ -17,7 +17,7 @@ export const userSignup = async (req: Request, res: Response) => {
       return;
     }
 
-    const userExists = await prisma.user.findFirst({
+    const userExists = await prisma.user.findUnique({
       where: {
         email: data.email,
       },
@@ -26,7 +26,7 @@ export const userSignup = async (req: Request, res: Response) => {
     if (userExists) {
       if (userExists.email === data.email) {
         res.status(403).json({
-          message: "User with this email already exists",
+          message: "Email is already associated with an account",
         });
         return;
       }
@@ -50,6 +50,7 @@ export const userSignup = async (req: Request, res: Response) => {
     res.cookie("token", token, {
       httpOnly: true,
       sameSite: "strict",
+      secure: process.env.NODE_ENV === "production",
     });
 
     res.status(201).json({
@@ -81,7 +82,7 @@ export const userSignin = async (req: Request, res: Response) => {
 
     const { email, password } = data;
 
-    const user = await prisma.user.findFirst({
+    const user = await prisma.user.findUnique({
       where: {
         email,
       },
@@ -89,7 +90,7 @@ export const userSignin = async (req: Request, res: Response) => {
 
     if (!user) {
       res.status(401).json({
-        message: "Invalid Credentials",
+        message: "Invalid email or password",
       });
       return;
     }
@@ -97,7 +98,7 @@ export const userSignin = async (req: Request, res: Response) => {
 
     if (!isPasswordValid) {
       res.status(401).json({
-        message: "Invalid Credentials",
+        message: "Invalid email or password",
       });
       return;
     }
@@ -108,6 +109,7 @@ export const userSignin = async (req: Request, res: Response) => {
     res.cookie("token", token, {
       httpOnly: true,
       sameSite: "strict",
+      secure: process.env.NODE_ENV === "production",
     });
 
     res.status(200).json({

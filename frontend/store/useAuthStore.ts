@@ -102,7 +102,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
 
     const wsUrl = `${BASE_URL}?userId=${authUser.id}`;
-    console.log("this is the one");
     const newSocket = new WebSocket(wsUrl);
 
     newSocket.onopen = () => {

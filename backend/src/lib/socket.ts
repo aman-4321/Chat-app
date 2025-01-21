@@ -55,7 +55,7 @@ wss.on("connection", (socket: CustomWebSocket, req: IncomingMessage) => {
       JSON.stringify({
         type: "getOnlineUsers",
         userIds: Array.from(socketMap.keys()),
-      }),
+      })
     );
 
     socket.on("message", (message) => {

@@ -21,7 +21,7 @@ declare global {
 export const authMiddleware = async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ): Promise<void> => {
   const token = req.cookies?.token;
 
@@ -70,6 +70,6 @@ export const authMiddleware = async (
         ? "Unauthorized - Token Expired"
         : "Unauthorized - Invalid Token";
     res.status(401).json({ message });
-    console.error("Authentication error: ", err);
+    console.error("Authentication error: ", message);
   }
 };
