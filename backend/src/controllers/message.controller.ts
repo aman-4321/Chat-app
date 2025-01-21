@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { prisma } from "../db";
 import cloudinary from "../lib/cloudinary";
-import { getRecieverSocketId, wss } from "../lib/socket";
+import { getRecieverSocketId } from "../lib/socket";
 
 export const getUserForSidebar = async (req: Request, res: Response) => {
   try {
@@ -89,7 +89,7 @@ export const sendMessage = async (req: Request, res: Response) => {
         JSON.stringify({
           type: "newMessage",
           message: newMessage,
-        })
+        }),
       );
     }
 

@@ -8,6 +8,16 @@ import { app, server } from "./lib/socket";
 
 const port = process.env.PORT;
 
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: "Too many requests from this IP, please try again later",
+});
+
+if (process.env.NODE_ENV === "production") {
+  app.use(limiter);
+}
+
 app.use(
   cors({
     credentials: true,
@@ -16,16 +26,6 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
-
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 20,
-  message: "Too many requests from this IP, please try again later",
-});
-
-if (process.env.NODE_ENV === "production") {
-  app.use(limiter);
-}
 
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));

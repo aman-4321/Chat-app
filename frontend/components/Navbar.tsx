@@ -4,15 +4,10 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { LogOut, MessageSquare, Settings, User } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 
 const Navbar = () => {
-  const { logout, authUser, checkAuth } = useAuthStore();
+  const { logout, authUser } = useAuthStore();
   const router = useRouter();
-
-  useEffect(() => {
-    checkAuth();
-  }, []);
 
   const handleLogout = async () => {
     try {

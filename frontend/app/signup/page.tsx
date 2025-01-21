@@ -12,7 +12,6 @@ import {
   User,
 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import toast from "react-hot-toast";
 
@@ -25,8 +24,6 @@ const Signup = () => {
   });
 
   const { isSigningUp, signup } = useAuthStore();
-
-  const router = useRouter();
 
   const validateForm = () => {
     if (!formData.fullName.trim()) return toast.error("Full name is required");
@@ -48,10 +45,7 @@ const Signup = () => {
     if (!isValid) return;
 
     try {
-      const success = await signup(formData);
-      if (success) {
-        router.push("/");
-      }
+      await signup(formData);
     } catch (error) {
       console.error("Signup Failed", error);
     }

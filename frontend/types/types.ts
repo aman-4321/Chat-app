@@ -27,8 +27,8 @@ export interface AuthState {
   isCheckingAuth: boolean;
   onlineUsers: string[];
   socket: null | WebSocket;
-  signup: (data: UserSignupData) => Promise<boolean>;
-  login: (data: UserLoginData) => Promise<boolean>;
+  signup: (data: UserSignupData) => Promise<void>;
+  login: (data: UserLoginData) => Promise<void>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
   updateProfile: (data: { profilePic: string }) => Promise<void>;

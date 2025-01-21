@@ -22,13 +22,11 @@ function ThemeProvider({ children }: { children: React.ReactNode }) {
 }
 
 function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { checkAuth, isCheckingAuth, onlineUsers } = useAuthStore();
-
-  console.log({ onlineUsers });
+  const { checkAuth, isCheckingAuth } = useAuthStore();
 
   useEffect(() => {
     checkAuth();
-  }, []);
+  }, [checkAuth]);
 
   if (isCheckingAuth) {
     return <Loading />;

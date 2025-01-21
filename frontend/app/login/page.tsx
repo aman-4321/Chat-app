@@ -5,7 +5,6 @@ import { Eye, EyeOff, Loader2, Lock, Mail, MessageSquare } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 import AuthImagePattern from "@/components/AuthImagePattern";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -15,17 +14,10 @@ const LoginPage = () => {
   });
   const { login, isLoggingIn } = useAuthStore();
 
-  const router = useRouter();
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const success = await login(formData);
-
-      if (success) {
-        router.push("/");
-      }
-      router.push("/");
+      await login(formData);
     } catch (error) {
       console.error(error);
     }

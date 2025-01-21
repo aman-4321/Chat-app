@@ -13,13 +13,13 @@ interface WebSocketMessage {
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   authUser: null,
+  onlineUsers: [],
+  socket: null,
   isSigningUp: false,
   isLoggingIn: false,
   isUpdatingProfile: false,
   isCheckingAuth: true,
   isChecking: true,
-  onlineUsers: [] as string[],
-  socket: null,
 
   checkAuth: async () => {
     try {
@@ -38,17 +38,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const res = await axiosInstance.post("/user/signup", data);
       set({ authUser: res.data });
-      // window.location.href = "/";
-      toast.success("Account created successfully");
-
       get().connectSocket();
-
-      return true;
+      toast.success("Account created successfully");
+      window.location.href = "/";
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
         toast.error(error.response?.data.message);
       }
-      return false;
     } finally {
       set({ isSigningUp: false });
     }
@@ -59,17 +55,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const res = await axiosInstance.post("/user/signin", data);
       set({ authUser: res.data });
-      // window.location.href = "/";
-      toast.success("Logged in successfully");
-
       get().connectSocket();
-
-      return true;
+      toast.success("Logged in successfully");
+      window.location.href = "/";
     } catch (error) {
       if (axios.isAxiosError(error)) {
         toast.error(error.response?.data.message);
       }
-      return false;
     } finally {
       set({ isLoggingIn: false });
     }
@@ -79,7 +71,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       await axiosInstance.post("/user/logout");
       set({ authUser: null });
-      // window.location.href = "/login";
       toast.success("logged out successfully");
       get().disconnectSocket();
     } catch (error) {
@@ -105,15 +96,18 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   connectSocket: () => {
-    const { socket, authUser } = get();
-    if (socket || !authUser) return;
+    const { authUser } = get();
+    if (!authUser?.id) {
+      return;
+    }
 
     const wsUrl = `${BASE_URL}?userId=${authUser.id}`;
+    console.log("this is the one");
     const newSocket = new WebSocket(wsUrl);
 
     newSocket.onopen = () => {
-      console.log("Socket connected");
       set({ socket: newSocket });
+      newSocket.send(JSON.stringify({ type: "getOnlineUsers" }));
     };
 
     newSocket.onmessage = (event) => {
@@ -131,6 +125,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       console.error("Websocket error", error);
     };
   },
+
   disconnectSocket: () => {
     const { socket } = get();
     if (socket) {

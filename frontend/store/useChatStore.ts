@@ -16,7 +16,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     set({ isUsersLoading: true });
     try {
       const res = await axiosInstance.get("/messages/users");
-      console.log("users fetched", res.data);
       set({ users: res.data });
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -58,19 +57,32 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   },
 
   subscribeToMessages: () => {
-    const { selectedUser } = get();
-    if (!selectedUser) return;
-
     const socket = useAuthStore.getState().socket;
+    if (!socket) return;
 
-    if (socket) {
-      socket.onmessage = (event) => {
-        const newMessage = JSON.parse(event.data);
+    socket.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        console.log("Recieved message:", data);
 
-        if (newMessage.senderId !== selectedUser.id) return;
-        set({ messages: [...get().messages, newMessage] });
-      };
-    }
+        if (data.type === "newMessage") {
+          const { selectedUser, messages } = get();
+
+          if (
+            data.message.senderId === selectedUser?.id ||
+            data.message.receiverId === selectedUser?.id
+          ) {
+            set({ messages: [...messages, data.message] });
+          }
+        }
+
+        if (data.type === "getOnlineUsers" && data.userIds) {
+          useAuthStore.setState({ onlineUsers: data.userIds });
+        }
+      } catch (error) {
+        console.error("Error parsing message", error);
+      }
+    };
   },
 
   unSubscribeFromMessages: () => {
