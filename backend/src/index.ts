@@ -12,7 +12,7 @@ const port = process.env.PORT || 8081;
 
 const limiter = rateLimit({
   windowMs: 5 * 60 * 1000,
-  max: 15,
+  max: 50,
   message: "Too many requests from this IP, please try again later",
 });
 

@@ -74,8 +74,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       await axiosInstance.post("/user/logout");
       set({ authUser: null });
-      toast.success("logged out successfully");
       get().disconnectSocket();
+      toast.success("logged out successfully");
+      window.location.href = "/login";
     } catch (error) {
       if (axios.isAxiosError(error)) {
         toast.error(error.response?.data.message);

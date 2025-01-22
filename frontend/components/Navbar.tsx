@@ -3,16 +3,13 @@
 import { useAuthStore } from "@/store/useAuthStore";
 import { LogOut, MessageSquare, Settings, User } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 const Navbar = () => {
   const { logout, authUser } = useAuthStore();
-  const router = useRouter();
 
   const handleLogout = async () => {
     try {
       await logout();
-      router.push("/login");
     } catch (error) {
       console.error(error);
     }
