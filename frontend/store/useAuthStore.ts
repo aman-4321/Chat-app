@@ -4,7 +4,10 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { create } from "zustand";
 
-export const BASE_URL = "ws://localhost:8080";
+const BASE_URL =
+  process.env.NEXT_PUBLIC_NODE_ENV === "production"
+    ? process.env.NEXT_PUBLIC_WS_URL
+    : "ws://localhost:8081";
 
 interface WebSocketMessage {
   type: string;
