@@ -5,6 +5,9 @@ import { JWT_SECRET } from "../config";
 import { signinSchema, signupSchema } from "../zod/userSchema";
 import { prisma } from "../db";
 import cloudinary from "../lib/cloudinary";
+import { config } from "dotenv";
+
+config();
 
 export const userSignup = async (req: Request, res: Response) => {
   try {
@@ -51,6 +54,10 @@ export const userSignup = async (req: Request, res: Response) => {
       httpOnly: true,
       sameSite: "strict",
       secure: process.env.NODE_ENV === "production",
+      domain:
+        process.env.NODE_ENV === "production"
+          ? process.env.COOKIE_DOMAIN
+          : undefined,
     });
 
     res.status(201).json({
@@ -110,6 +117,10 @@ export const userSignin = async (req: Request, res: Response) => {
       httpOnly: true,
       sameSite: "strict",
       secure: process.env.NODE_ENV === "production",
+      domain:
+        process.env.NODE_ENV === "production"
+          ? process.env.COOKIE_DOMAIN
+          : undefined,
     });
 
     res.status(200).json({
