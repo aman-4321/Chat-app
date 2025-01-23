@@ -66,7 +66,7 @@ const ChatContainer = () => {
             }`}
             ref={messageEndRef}
           >
-            <div className=" chat-image avatar">
+            <div className="chat-image avatar">
               <div className="size-10 rounded-full border">
                 <Image
                   height={100}
@@ -89,6 +89,8 @@ const ChatContainer = () => {
               {message.image && (
                 <Image
                   src={message.image}
+                  width={200}
+                  height={200}
                   alt="Attachment"
                   className="sm:max-w-[200px] rounded-md mb-2"
                 />

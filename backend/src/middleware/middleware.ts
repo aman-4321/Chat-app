@@ -26,6 +26,16 @@ export const authMiddleware = async (
   const token = req.cookies?.token;
 
   if (!token) {
+    res.clearCookie("token", {
+      httpOnly: true,
+      sameSite: "strict",
+      secure: process.env.NODE_ENV === "production",
+      domain:
+        process.env.NODE_ENV === "production"
+          ? process.env.COOKIE_DOMAIN
+          : undefined,
+    });
+
     res.status(401).json({ message: "Unauthorized - No Token Provided" });
     return;
   }
@@ -65,17 +75,15 @@ export const authMiddleware = async (
     req.user = user;
     next();
   } catch (err: any) {
-    if (err instanceof TokenExpiredError) {
-      res.clearCookie("token", {
-        httpOnly: true,
-        sameSite: "strict",
-        secure: process.env.NODE_ENV === "production",
-        domain:
-          process.env.NODE_ENV === "production"
-            ? process.env.COOKIE_DOMAIN
-            : undefined,
-      });
-    }
+    res.clearCookie("token", {
+      httpOnly: true,
+      sameSite: "strict",
+      secure: process.env.NODE_ENV === "production",
+      domain:
+        process.env.NODE_ENV === "production"
+          ? process.env.COOKIE_DOMAIN
+          : undefined,
+    });
 
     const message =
       err instanceof TokenExpiredError

@@ -3,6 +3,7 @@ import { useChatStore } from "../store/useChatStore";
 import { Image as ImageIcon, Send, X } from "lucide-react";
 import toast from "react-hot-toast";
 import Image from "next/image";
+import imageCompression from "browser-image-compression";
 
 interface MessageInputRef extends HTMLInputElement {
   value: string;
@@ -14,7 +15,7 @@ const MessageInput = () => {
   const fileInputRef = useRef<MessageInputRef>(null);
   const { sendMessage } = useChatStore();
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
 
     if (!file) return;
@@ -24,11 +25,24 @@ const MessageInput = () => {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setImagePreview(reader.result as string);
-    };
-    reader.readAsDataURL(file);
+    try {
+      const options = {
+        maxSize: 0.5,
+        maxWidthOrHeight: 1024,
+        useWebWorker: true,
+      };
+
+      const compressedFile = await imageCompression(file, options);
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(compressedFile);
+    } catch (error) {
+      console.error("Failed to compress image:", error);
+      toast.error("Failed to compress image");
+    }
   };
 
   const removeImage = () => {
@@ -46,7 +60,6 @@ const MessageInput = () => {
         image: imagePreview,
       });
 
-      // Clear form
       setText("");
       setImagePreview(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -63,6 +76,9 @@ const MessageInput = () => {
             <Image
               src={imagePreview}
               alt="Preview"
+              width={300}
+              height={300}
+              unoptimized
               className="w-20 h-20 object-cover rounded-lg border border-zinc-700"
             />
             <button
