@@ -48,7 +48,7 @@ export const userSignup = async (req: Request, res: Response) => {
     });
 
     const userId = user.id;
-    const token = jwt.sign({ userId }, JWT_SECRET, { expiresIn: "24h" });
+    const token = jwt.sign({ userId }, JWT_SECRET, { expiresIn: "7d" });
 
     res.cookie("token", token, {
       httpOnly: true,
@@ -110,7 +110,7 @@ export const userSignin = async (req: Request, res: Response) => {
       return;
     }
     const token = jwt.sign({ userId: user.id }, JWT_SECRET, {
-      expiresIn: "24h",
+      expiresIn: "7d",
     });
 
     res.cookie("token", token, {

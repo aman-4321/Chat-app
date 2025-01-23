@@ -65,11 +65,22 @@ export const authMiddleware = async (
     req.user = user;
     next();
   } catch (err: any) {
+    if (err instanceof TokenExpiredError) {
+      res.clearCookie("token", {
+        httpOnly: true,
+        sameSite: "strict",
+        secure: process.env.NODE_ENV === "production",
+        domain:
+          process.env.NODE_ENV === "production"
+            ? process.env.COOKIE_DOMAIN
+            : undefined,
+      });
+    }
+
     const message =
       err instanceof TokenExpiredError
         ? "Unauthorized - Token Expired"
         : "Unauthorized - Invalid Token";
     res.status(401).json({ message });
-    console.error("Authentication error: ", message);
   }
 };
