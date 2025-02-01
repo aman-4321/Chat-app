@@ -139,6 +139,12 @@ export const userSignin = async (req: Request, res: Response) => {
 
 export const userLogout = async (req: Request, res: Response) => {
   try {
+    if (!req.cookies.token) {
+      res.status(400).json({
+        message: "Already logged out or no active session",
+      });
+    }
+
     res.clearCookie("token", {
       httpOnly: true,
       sameSite: "strict",
@@ -152,7 +158,7 @@ export const userLogout = async (req: Request, res: Response) => {
   } catch (err) {
     console.log(err);
     res.status(500).json({
-      message: "Error during Signing in",
+      message: "Error during Logout",
     });
   }
 };
