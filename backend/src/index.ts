@@ -41,7 +41,7 @@ app.use(compression());
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/messages", messageRouter);
 
-app.use("/health", (req: Request, res: Response) => {
+app.get("/health", (req: Request, res: Response) => {
   res.status(200).json({
     status: "ok",
   });
