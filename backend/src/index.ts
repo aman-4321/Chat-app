@@ -29,7 +29,7 @@ app.use(
         : "http://localhost:3000",
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
-  })
+  }),
 );
 
 app.use(express.json({ limit: "5mb" }));
@@ -43,7 +43,7 @@ app.use("/api/v1/messages", messageRouter);
 
 app.use("/health", (req: Request, res: Response) => {
   res.status(200).json({
-    msg: "working",
+    status: "ok",
   });
 });
 
