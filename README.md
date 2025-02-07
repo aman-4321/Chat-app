@@ -1,5 +1,7 @@
 # Full Stack Real-Time Chat Application
 
+![Chat App Demo](./frontend/public/Screenshot_20250207_204844.png)
+
 A modern, real-time chat application built with Next.js and Node.js, featuring instant messaging, file sharing, and user presence detection.
 
 ## Project Structure
