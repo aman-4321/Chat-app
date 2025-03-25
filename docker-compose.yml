@@ -35,9 +35,6 @@ services:
         condition: service_healthy
     networks:
       - chat-network
-    dns:
-      - 8.8.8.8
-      - 8.8.4.4
     logging:
       driver: "json-file"
       options:

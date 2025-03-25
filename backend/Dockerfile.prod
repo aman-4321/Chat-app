@@ -10,18 +10,17 @@ COPY package.json pnpm-lock.yaml ./
 RUN pnpm install
 
 COPY . .
+
 RUN pnpm build
 
 FROM node:20-slim AS production
 
 WORKDIR /app
 
-# RUN apt-get update && apt-get install -y openssl
 RUN npm install -g pnpm
 
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/package.json ./
-COPY --from=builder /app/pnpm-lock.yaml ./
+COPY --from=builder /app/package.json /app/pnpm-lock.yaml ./
 
 RUN pnpm install --prod
 
